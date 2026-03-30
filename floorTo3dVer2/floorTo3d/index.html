@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Structural Intelligence Viewer</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #121212; }
+        canvas { display: block; }
+        #ui { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            color: #00ff88; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff88;
+        }
+        h3 { margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h3>System: Structural Render</h3>
+        <p id="status">Initializing Engine...</p>
+        <p style="font-size: 0.8em; color: #888;">Controls: Left Click (Rotate) | Scroll (Zoom) | Right Click (Pan)</p>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // Lighting
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(50, 100, 50);
+        scene.add(dirLight);
+
+        // Grid Helper
+        scene.add(new THREE.GridHelper(100, 100, 0x444444, 0x222222));
+
+        // Fetch single JSON file
+        fetch('model_data.json')
+            .then(r => r.json())
+            .then(data => {
+                const walls = data.walls || [];
+                const rooms = data.rooms || [];
+                const openings = data.openings || [];
+
+                document.getElementById('status').innerText = 
+                    `Rendered ${walls.length} Walls | ${rooms.length} Rooms | ${openings.length} Openings`;
+
+                // --- WALLS ---
+                walls.forEach(wall => {
+                    // Expecting wall.start and wall.end as [x,z]
+                    const [startX, startZ] = wall.start;
+                    const [endX, endZ] = wall.end;
+                    const totalHeight = 4.5;
+                    const length = Math.sqrt((endX - startX)**2 + (endZ - startZ)**2);
+                    const thickness = wall.type === 'load-bearing' ? 0.35 : 0.18;
+
+                    let wallColor = wall.type === 'load-bearing' ? 0x8b0000 : 0x666666;
+                    if (wall.best_option) {
+                        const mat = wall.best_option.material;
+                        if (mat === "Red Brick") wallColor = 0xa52a2a;
+                        else if (mat === "RCC") wallColor = 0x999999;
+                        else if (mat === "Steel Frame") wallColor = 0x4682b4;
+                        else if (mat === "AAC Blocks") wallColor = 0xeeeeee;
+                    }
+
+                    const material = new THREE.MeshStandardMaterial({ color: wallColor });
+                    const midX = (startX + endX) / 2;
+                    const midZ = (startZ + endZ) / 2;
+                    const rotation = -Math.atan2(endZ - startZ, endX - startX);
+
+                    const geometry = new THREE.BoxGeometry(length, totalHeight, thickness);
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(midX, totalHeight / 2, midZ);
+                    mesh.rotation.y = rotation;
+                    scene.add(mesh);
+                });
+
+                // --- ROOMS ---
+                const roomMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff88, opacity: 0.2, transparent: true });
+                rooms.forEach(room => {
+                    const shape = new THREE.Shape(room.map(pt => new THREE.Vector2(pt[0], pt[1])));
+                    const geometry = new THREE.ShapeGeometry(shape);
+                    const mesh = new THREE.Mesh(geometry, roomMaterial);
+                    mesh.rotation.x = -Math.PI / 2;
+                    scene.add(mesh);
+                });
+
+                // --- OPENINGS are intentionally not rendered to remove blue lines ---
+
+                // Camera View
+                camera.position.set(50, 50, 50);
+                controls.target.set(20, 0, 20);
+                controls.update();
+            })
+            .catch(err => {
+                document.getElementById('status').innerText = "Error loading model_data.json";
+                console.error(err);
+            });
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,11 +1,14 @@
+#Converts 2D floor plan segments into 3D mesh data for Three.js visualization.
+# Uses a fixed floor height to extrude walls and rooms into 3D boxes.
+
 class Generator3D:
     def __init__(self, floor_height=3.0):
         self.floor_height = floor_height # Mandatory standard height 
 
     def generate_mesh_data(self, structured_elements):
-        """
+        """   
         Converts 2D segments into 3D box coordinates for Three.js.
-        """
+        """   
         mesh_objects = []
         for el in structured_elements:
             coords = list(el['geometry'].coords)

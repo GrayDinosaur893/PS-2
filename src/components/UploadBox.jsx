@@ -49,66 +49,70 @@ const UploadBox = ({ onFileUpload, previewImage, onRemoveImage, isLoading }) => 
 
   return (
     <div className="space-y-4">
-      <div
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-200 ${
-          isDragging
-            ? 'border-blue-500 bg-blue-50'
-            : isLoading
-            ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-            : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <CloudArrowUpIcon className={`mx-auto h-12 w-12 ${isLoading ? 'text-gray-300' : 'text-gray-400'}`} />
-        <div className="mt-4">
-          <p className="text-sm font-medium text-gray-600">
-            {isLoading ? 'Processing...' : 'Drag and drop your floor plan image here'}
-          </p>
-          {!isLoading && (
-            <p className="text-xs text-gray-500 mt-1">
-              or click to select a file
-            </p>
-          )}
-        </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileInput}
-          disabled={isLoading}
-          className={`absolute inset-0 w-full h-full opacity-0 ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-        />
-      </div>
+      {!previewImage && (
+        <>
+          <div
+            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 glass-panel ${
+              isDragging
+                ? 'border-blue-400 bg-blue-900/20 shadow-[0_0_15px_rgba(96,165,250,0.5)]'
+                : isLoading
+                ? 'border-slate-700 bg-black/40 opacity-60 cursor-not-allowed'
+                : 'border-blue-500/30 hover:border-blue-400/80 hover:bg-slate-800/60 hover:shadow-[0_0_20px_rgba(56,189,248,0.2)]'
+            }`}
+             onDragOver={handleDragOver}
+             onDragLeave={handleDragLeave}
+             onDrop={handleDrop}
+          >
+             <CloudArrowUpIcon className={`mx-auto h-16 w-16 mb-2 ${isLoading ? 'text-slate-600' : 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]'}`} />
+             <div className="mt-4">
+               <p className="text-xl font-clash tracking-widest text-slate-200 drop-shadow-md uppercase">
+                 {isLoading ? 'UPLOADING BLUEPRINT...' : 'DROP ARENA BLUEPRINT HERE'}
+               </p>
+               {!isLoading && (
+                 <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">
+                   or click to upload from device
+                 </p>
+               )}
+             </div>
+             <input
+               type="file"
+               accept="image/*"
+               onChange={handleFileInput}
+               disabled={isLoading}
+               className={`absolute inset-0 w-full h-full opacity-0 ${isLoading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+             />
+          </div>
 
-      {!isLoading && !previewImage && (
-        <div className="flex justify-center">
-          <label className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
-            <CloudArrowUpIcon className="mr-2 h-4 w-4" />
-            Select Floor Plan
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileInput}
-              className="hidden"
-            />
-          </label>
-        </div>
+          {!isLoading && (
+             <div className="flex justify-center">
+               <label className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                 <CloudArrowUpIcon className="mr-2 h-4 w-4" />
+                 Select Floor Plan
+                 <input
+                   type="file"
+                   accept="image/*"
+                   onChange={handleFileInput}
+                   className="hidden"
+                 />
+               </label>
+             </div>
+          )}
+        </>
       )}
 
       {previewImage && (
         <div className="mt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Preview</h3>
-          <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden inline-block w-full">
+          <h3 className="text-xl text-blue-300 font-clash tracking-wider drop-shadow-md mb-2">ARENA PREVIEW</h3>
+          <div className="relative glass-panel rounded-lg overflow-hidden border border-blue-500/20 shadow-[0_0_15px_rgba(0,0,0,0.8)] inline-block w-full">
             <img
               src={previewImage.preview}
               alt={previewImage.name}
-              className={`w-full h-auto max-h-[600px] object-contain ${isLoading ? 'opacity-50' : ''}`}
+              className={`w-full h-auto max-h-[600px] object-contain ${isLoading ? 'opacity-40 grayscale' : ''}`}
             />
             {previewImage.debugLines && previewImage.dimensions && !isLoading && (
               <svg 
                 viewBox={`0 0 ${previewImage.dimensions.width} ${previewImage.dimensions.height}`}
-                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                className="absolute top-0 left-0 w-full h-full pointer-events-none drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]"
                 preserveAspectRatio="xMidYMid meet"
               >
                 {previewImage.debugLines.map((line, i) => (
@@ -120,21 +124,19 @@ const UploadBox = ({ onFileUpload, previewImage, onRemoveImage, isLoading }) => 
                   />
                 ))}
                 {previewImage.debugLines.map((line, i) => (
-                  <circle key={`p1-${i}`} cx={line.x1} cy={line.y1} r="5" fill="#3b82f6" />
+                  <circle key={`p1-${i}`} cx={line.x1} cy={line.y1} r="5" fill="#38bdf8" />
                 ))}
                 {previewImage.debugLines.map((line, i) => (
-                  <circle key={`p2-${i}`} cx={line.x2} cy={line.y2} r="5" fill="#3b82f6" />
+                  <circle key={`p2-${i}`} cx={line.x2} cy={line.y2} r="5" fill="#38bdf8" />
                 ))}
               </svg>
             )}
             {!isLoading && (
               <button
                 onClick={onRemoveImage}
-                className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 z-10"
+                className="absolute top-3 right-3 bg-red-600/80 backdrop-blur-md text-white border border-red-400 p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.6)] focus:outline-none z-10"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <span className="font-clash text-sm tracking-wider pr-1">CLEAR</span>
               </button>
             )}
           </div>

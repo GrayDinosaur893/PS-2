@@ -1,3 +1,7 @@
+#Narrator
+
+# technical output from the MaterialEngine and turns it into human‑readable explanations.
+
 class Narrator:
     def __init__(self):
         # Local knowledge base derived from the starter material database [cite: 40, 41]
